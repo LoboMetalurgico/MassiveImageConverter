@@ -1,0 +1,16 @@
+{
+  "name": "massiveimageconverter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "An application to convert a massive image amount to another format",
+  "main": "src/main/mic.js",
+  "scripts": {
+    "start": "node src/main/mic.js",
+    "test": "node src/tests/test.js"
+  },
+  "author": "LoboMetalurgico",
+  "license": "MIT",
+  "dependencies": {
+    "sharp": "^0.30.7"
+  }
+}
