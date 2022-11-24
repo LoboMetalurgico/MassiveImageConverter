@@ -2,6 +2,33 @@ const converter = require('./converter');
 const path = require('path');
 const fs = require('fs');
 
+const globalInputFiles = [];
+
+async function loadFiles(inputPath, outputPath, isRecursive = false, subDir = '') {
+    const dir = fs.readdirSync(inputPath);
+
+    for await (file of dir) {
+        if (fs.statSync(path.join(inputPath, file)).isFile()){
+            if (isRecursive) {
+                globalInputFiles.push(path.join(subDir, file));
+            } else {
+                globalInputFiles.push(file);
+            }
+        } else {
+            try {
+                if (!fs.existsSync(path.resolve(outputPath, subDir, file))) {
+                    fs.mkdirSync(path.resolve(outputPath, subDir, file));
+                }
+                globalInputFiles.concat(await loadFiles(path.join(inputPath, file), outputPath, true, path.join(subDir, file)));
+            } catch (e) {
+                console.error('Error while reading subdirectory: ' + file + '. Skipping...');
+                console.error(e);
+            }
+        }
+    }
+    return globalInputFiles;
+}
+
 async function run(args) {
     var targetFormat;
     var outputPath;
@@ -59,11 +86,7 @@ async function run(args) {
         targetFormat = 'webp';
     }
 
-    const inputFiles = [];
-
-    fs.readdirSync(inputPath).forEach(file => {
-        inputFiles.push(file);
-    });
+    const inputFiles = await loadFiles(inputPath, outputPath);
 
     if (inputFiles.length <= 0) {
         console.error('No input files found in: ' + inputPath + '. Exiting...');
